@@ -78,7 +78,7 @@ export default function ProfileScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'], // Оновлено для нових версій Expo
+      mediaTypes: ['images'], 
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
@@ -90,17 +90,14 @@ export default function ProfileScreen() {
     setUploading(true);
 
     try {
-      // 1. Читаємо файл як base64 через Expo FileSystem
       const base64 = await FileSystem.readAsStringAsync(asset.uri, {
-        encoding: 'base64', // Використовуємо звичайний рядок
+        encoding: 'base64', 
       });
 
-      // 2. Генеруємо унікальний шлях
       const fileName = asset.uri.split("/").pop() || "avatar.jpg";
       const ext = fileName.split(".").pop() || "jpg";
       const path = `${profile?.id || "user"}_${Date.now()}.${ext}`;
 
-      // 3. Відправляємо декодований ArrayBuffer в Supabase
       const { data: uploadData, error: upErr } = await supabase.storage
         .from("avatars")
         .upload(path, decode(base64), {
@@ -110,7 +107,6 @@ export default function ProfileScreen() {
 
       if (upErr) throw upErr;
 
-      // 4. Отримуємо публічне посилання та оновлюємо профіль
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       await updateProfile({ avatar_url: data.publicUrl });
 

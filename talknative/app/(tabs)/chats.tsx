@@ -55,7 +55,6 @@ export default function ChatsScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <NetworkBanner />
 
-      {/* Header */}
       <View
         style={[
           styles.header,
@@ -78,7 +77,6 @@ export default function ChatsScreen() {
         </Pressable>
       </View>
 
-      {/* Search */}
       <View
         style={[
           styles.searchBar,

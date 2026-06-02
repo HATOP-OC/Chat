@@ -127,7 +127,6 @@ export async function findOrCreateConversation(
   otherUserId: string
 ): Promise<string | null> {
   try {
-    // 1. Check for existing 1:1 conversation
     const { data: participants, error: pErr } = await supabase
       .from("conversation_participants")
       .select("conversation_id")
@@ -148,7 +147,6 @@ export async function findOrCreateConversation(
       if (existing) return existing.conversation_id;
     }
 
-    // 2. If not found, create new conversation
     const { data: conv, error: cErr } = await supabase
       .from("conversations")
       .insert({ updated_at: new Date().toISOString() })

@@ -84,7 +84,6 @@ export default function ChatScreen() {
       behavior="padding"
       keyboardVerticalOffset={0}
     >
-      {/* Header */}
       <View
         style={[
           styles.header,
@@ -124,7 +123,6 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      {/* Messages */}
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
@@ -148,7 +146,6 @@ export default function ChatScreen() {
         scrollEnabled={!!messages.length}
       />
 
-      {/* Input bar */}
       <View
         style={[
           styles.inputBar,
