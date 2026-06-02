@@ -41,12 +41,16 @@ export function useMessages(conversationId: string) {
         async (payload) => {
           const newMsg = payload.new as Message;
           if (newMsg.sender_id === user.id) return;
+          
           const { data: profile } = await supabase
             .from("profiles")
             .select("id, display_name, avatar_url")
             .eq("id", newMsg.sender_id)
             .single();
-          setMessages((prev) => [{ ...newMsg, sender: profile }, ...prev]);
+          
+          const sender = profile ? (profile as Message["sender"]) : undefined;
+
+          setMessages((prev) => [{ ...newMsg, sender }, ...prev]);
           await markMessagesRead(conversationId, user.id);
         }
       )

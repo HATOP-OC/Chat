@@ -25,9 +25,6 @@ function NativeTabLayout() {
         <Icon sf={{ default: "person.circle", selected: "person.circle.fill" }} />
         <Label>Profile</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="index" style={{ display: "none" }}>
-        <Label>Index</Label>
-      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
