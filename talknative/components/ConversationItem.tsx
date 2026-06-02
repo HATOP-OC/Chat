@@ -32,6 +32,25 @@ function formatTimestamp(iso: string | undefined) {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
+function getPreviewText(message: Conversation["last_message"]) {
+  if (!message) return "No messages yet";
+  const content = message.content || "";
+  const isVoice = message.type === "voice" || content.includes(".m4a") || content.includes("voice-messages") || content.startsWith("D:");
+
+  if (isVoice) {
+    let duration = "";
+    if (content.startsWith("D:")) {
+      const parts = content.substring(2).split("|");
+      duration = parts[0] ? ` (${parts[0]}s)` : "";
+    } else if (content.includes("|")) {
+      const parts = content.split("|");
+      duration = parts[1] ? ` (${parts[1]}s)` : "";
+    }
+    return `🎤 Voice message${duration}`;
+  }
+  return content;
+}
+
 export function ConversationItem({ conversation, onPress }: Props) {
   const colors = useColors();
   const { other_user, last_message, unread_count } = conversation;
@@ -97,7 +116,7 @@ export function ConversationItem({ conversation, onPress }: Props) {
             ]}
             numberOfLines={1}
           >
-            {last_message?.content ?? "No messages yet"}
+            {getPreviewText(last_message)}
           </Text>
           {hasUnread && (
             <View

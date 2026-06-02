@@ -84,6 +84,7 @@ export default function ChatScreen() {
       behavior="padding"
       keyboardVerticalOffset={0}
     >
+      {/* Header */}
       <View
         style={[
           styles.header,
@@ -123,6 +124,7 @@ export default function ChatScreen() {
         </View>
       </View>
 
+      {/* Messages */}
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
@@ -146,6 +148,7 @@ export default function ChatScreen() {
         scrollEnabled={!!messages.length}
       />
 
+      {/* Input bar */}
       <View
         style={[
           styles.inputBar,
@@ -193,9 +196,9 @@ export default function ChatScreen() {
           </Pressable>
         ) : (
           <VoiceRecordButton
-            onRecordComplete={(ms) => {
-              const secs = Math.round(ms / 1000);
-              send(`🎤 Voice message (${secs}s)`);
+            onRecordComplete={(url, durationMs) => {
+              const secs = Math.max(1, Math.round(durationMs / 1000));
+              send(`D:${secs}|${url}`, "voice");
             }}
           />
         )}

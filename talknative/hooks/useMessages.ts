@@ -47,10 +47,12 @@ export function useMessages(conversationId: string) {
             .select("id, display_name, avatar_url")
             .eq("id", newMsg.sender_id)
             .single();
-          
+
+          // Фікс: перетворюємо null на undefined і примусово кастуємо до типу,
+          // щоб TS не кричав на невідповідність чи 'any'
           const sender = profile ? (profile as Message["sender"]) : undefined;
 
-          setMessages((prev) => [{ ...newMsg, sender }, ...prev]);
+          setMessages((prev) => [{ ...newMsg, sender, type: newMsg.type || "text" }, ...prev]);
           await markMessagesRead(conversationId, user.id);
         }
       )
@@ -89,7 +91,7 @@ export function useMessages(conversationId: string) {
     };
   }, [conversationId, user?.id]);
 
-  const send = async (content: string) => {
+  const send = async (content: string, type: "text" | "voice" = "text") => {
     if (!user || !content.trim()) return;
     const optimisticId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     const optimistic: Message = {
@@ -97,14 +99,14 @@ export function useMessages(conversationId: string) {
       conversation_id: conversationId,
       sender_id: user.id,
       content: content.trim(),
-      type: "text",
+      type: type, // Твоя фіча: використовуємо актуальний тип
       status: "sending",
       created_at: new Date().toISOString(),
       is_optimistic: true,
     };
     setMessages((prev) => [optimistic, ...prev]);
 
-    const sent = await sendMessage(conversationId, user.id, content.trim());
+    const sent = await sendMessage(conversationId, user.id, content.trim(), type);
     if (sent) {
       setMessages((prev) =>
         prev.map((m) => (m.id === optimisticId ? { ...sent, status: "sent" } : m))

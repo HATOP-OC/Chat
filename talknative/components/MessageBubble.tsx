@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Audio } from "expo-av";
+import React, { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View, ActivityIndicator } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
 import { Message } from "@/types";
@@ -38,6 +39,83 @@ function StatusIcon({
   return null;
 }
 
+function VoicePlayer({ content, color }: { content: string; color: string }) {
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Robust parsing: D:5|url OR url|5 OR url
+  let url = content;
+  let durationSecs = "";
+
+  if (content.startsWith("D:")) {
+    const parts = content.substring(2).split("|");
+    durationSecs = parts[0];
+    url = parts[1] || "";
+  } else if (content.includes("|")) {
+    const parts = content.split("|");
+    url = parts[0];
+    durationSecs = parts[1];
+  }
+
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
+
+  const togglePlay = async () => {
+    if (!url || !url.startsWith("http")) return;
+
+    if (sound) {
+      if (isPlaying) {
+        await sound.pauseAsync();
+        setIsPlaying(false);
+      } else {
+        await sound.playAsync();
+        setIsPlaying(true);
+      }
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: url },
+        { shouldPlay: true }
+      );
+      setSound(newSound);
+      setIsPlaying(true);
+
+      newSound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setIsPlaying(false);
+          newSound.setPositionAsync(0);
+        }
+      });
+    } catch (e) {
+      console.error("Failed to play sound", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Pressable onPress={togglePlay} style={styles.voiceRow}>
+      {loading ? (
+        <ActivityIndicator size="small" color={color} />
+      ) : (
+        <Ionicons name={isPlaying ? "pause" : "play"} size={20} color={color} />
+      )}
+      <Text style={[styles.text, { color, marginLeft: 8 }]}>
+        Voice message{durationSecs ? ` (${durationSecs}s)` : ""}
+      </Text>
+    </Pressable>
+  );
+}
+
 export function MessageBubble({ message, isMine }: Props) {
   const colors = useColors();
 
@@ -50,6 +128,12 @@ export function MessageBubble({ message, isMine }: Props) {
   const metaColor = isMine
     ? "rgba(255,255,255,0.7)"
     : colors.mutedForeground;
+
+  // More flexible check for voice messages
+  const isVoice =
+    message.type === "voice" ||
+    message.content.includes(".m4a") ||
+    message.content.includes("voice-messages");
 
   return (
     <View
@@ -68,9 +152,13 @@ export function MessageBubble({ message, isMine }: Props) {
           },
         ]}
       >
-        <Text style={[styles.text, { color: textColor }]}>
-          {message.content}
-        </Text>
+        {isVoice ? (
+          <VoicePlayer content={message.content} color={textColor} />
+        ) : (
+          <Text style={[styles.text, { color: textColor }]}>
+            {message.content}
+          </Text>
+        )}
         <View style={styles.meta}>
           <Text style={[styles.time, { color: metaColor }]}>
             {formatTime(message.created_at)}
@@ -121,5 +209,11 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 11,
     fontFamily: "Inter_400Regular",
+  },
+  voiceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    minWidth: 120,
+    paddingVertical: 4,
   },
 });
