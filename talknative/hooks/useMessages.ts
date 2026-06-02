@@ -48,8 +48,6 @@ export function useMessages(conversationId: string) {
             .eq("id", newMsg.sender_id)
             .single();
 
-          // Фікс: перетворюємо null на undefined і примусово кастуємо до типу,
-          // щоб TS не кричав на невідповідність чи 'any'
           const sender = profile ? (profile as Message["sender"]) : undefined;
 
           setMessages((prev) => [{ ...newMsg, sender, type: newMsg.type || "text" }, ...prev]);
@@ -99,7 +97,7 @@ export function useMessages(conversationId: string) {
       conversation_id: conversationId,
       sender_id: user.id,
       content: content.trim(),
-      type: type, // Твоя фіча: використовуємо актуальний тип
+      type: type, 
       status: "sending",
       created_at: new Date().toISOString(),
       is_optimistic: true,

@@ -40,8 +40,8 @@ export default function RegisterScreen() {
     try {
       await signUp(email.trim().toLowerCase(), password, name.trim());
       router.replace("/(tabs)/chats");
-    } catch (e: any) {
-      setError(e.message ?? "Registration failed");
+    } catch (e) {
+      setError((e as Error).message ?? "Registration failed");
     }
   };
 

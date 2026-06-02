@@ -35,8 +35,8 @@ export default function LoginScreen() {
     try {
       await signIn(email.trim().toLowerCase(), password);
       router.replace("/(tabs)/chats");
-    } catch (e: any) {
-      setError(e.message ?? "Login failed");
+    } catch (e) {
+      setError((e as Error).message ?? "Login failed");
     }
   };
 

@@ -65,11 +65,12 @@ export default function ContactsScreen() {
           params: { id: convId, name: contact.display_name },
         });
       }
-    } catch (e: any) {
-      console.error("Failed to start chat:", e);
+    } catch (e) {
+      const err = e as Error;
+      console.error("Failed to start chat:", err);
       Alert.alert(
         "Error",
-        e.message || "Could not start chat. This is usually due to missing database permissions (RLS)."
+        err.message || "Could not start chat. This is usually due to missing database permissions (RLS)."
       );
     } finally {
       setOpeningId(null);

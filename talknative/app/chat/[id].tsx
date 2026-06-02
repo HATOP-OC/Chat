@@ -34,7 +34,7 @@ function useOtherUserProfile(conversationId: string, currentUserId: string) {
       .neq("user_id", currentUserId)
       .single()
       .then(({ data }) => {
-        if (data) setProfile((data as any).profiles as Profile);
+        if (data) setProfile((data as unknown as { profiles: Profile }).profiles);
       });
   }, [conversationId, currentUserId]);
   return profile;
@@ -84,7 +84,6 @@ export default function ChatScreen() {
       behavior="padding"
       keyboardVerticalOffset={0}
     >
-      {/* Header */}
       <View
         style={[
           styles.header,
@@ -148,7 +147,6 @@ export default function ChatScreen() {
         scrollEnabled={!!messages.length}
       />
 
-      {/* Input bar */}
       <View
         style={[
           styles.inputBar,

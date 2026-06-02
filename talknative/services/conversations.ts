@@ -1,5 +1,17 @@
 import { supabase } from "@/lib/supabase";
-import { Conversation, Message } from "@/types";
+import { Conversation, Message, Profile } from "@/types";
+
+type ConversationRow = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  conversation_participants: {
+    user_id: string;
+    last_read_at: string | null;
+    profiles: Profile;
+  }[];
+  messages: Message[];
+};
 
 export async function fetchConversations(
   userId: string
@@ -25,23 +37,23 @@ export async function fetchConversations(
 
   if (cErr || !conversations) return [];
 
-  return conversations.map((c: any) => {
+  return (conversations as unknown as ConversationRow[]).map((c) => {
     const otherParticipant = c.conversation_participants?.find(
-      (p: any) => p.user_id !== userId
+      (p) => p.user_id !== userId
     );
     const sortedMessages = (c.messages ?? []).sort(
-      (a: any, b: any) =>
+      (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
     const lastMessage = sortedMessages[0] ?? null;
     const myParticipant = c.conversation_participants?.find(
-      (p: any) => p.user_id === userId
+      (p) => p.user_id === userId
     );
     const lastReadAt = myParticipant?.last_read_at
       ? new Date(myParticipant.last_read_at).getTime()
       : 0;
     const unreadCount = (c.messages ?? []).filter(
-      (m: any) =>
+      (m) =>
         m.sender_id !== userId &&
         new Date(m.created_at).getTime() > lastReadAt
     ).length;
@@ -57,6 +69,8 @@ export async function fetchConversations(
   });
 }
 
+type MessageRow = Message & { profiles: Profile };
+
 export async function fetchMessages(
   conversationId: string
 ): Promise<Message[]> {
@@ -70,7 +84,7 @@ export async function fetchMessages(
     .limit(100);
 
   if (error || !data) return [];
-  return data.map((m: any) => ({
+  return (data as unknown as MessageRow[]).map((m) => ({
     ...m,
     sender: m.profiles,
   })) as Message[];
@@ -156,7 +170,6 @@ export async function findOrCreateConversation(
     if (cErr) throw cErr;
     if (!conv) return null;
 
-    // 3. Add both participants
     const { error: iErr } = await supabase.from("conversation_participants").insert([
       { conversation_id: conv.id, user_id: userId },
       { conversation_id: conv.id, user_id: otherUserId },

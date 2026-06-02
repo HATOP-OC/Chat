@@ -44,7 +44,6 @@ function VoicePlayer({ content, color }: { content: string; color: string }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Robust parsing: D:5|url OR url|5 OR url
   let url = content;
   let durationSecs = "";
 
@@ -129,7 +128,6 @@ export function MessageBubble({ message, isMine }: Props) {
     ? "rgba(255,255,255,0.7)"
     : colors.mutedForeground;
 
-  // More flexible check for voice messages
   const isVoice =
     message.type === "voice" ||
     message.content.includes(".m4a") ||

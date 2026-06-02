@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system/legacy"; // Використовуємо legacy API
+import * as FileSystem from "expo-file-system/legacy";
 import { decode } from "base64-arraybuffer";
 import React, { useState } from "react";
 import {
@@ -58,12 +58,13 @@ export default function ProfileScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setEditName(false);
       setEditStatus(false);
-    } catch (e: any) {
-      const msg = e?.message || "";
+    } catch (e) {
+      const err = e as Error;
+      const msg = err?.message || "";
       if (msg.includes("Network request failed")) {
         Alert.alert("Connection Error", "Please check your internet connection and Supabase URL.");
       } else {
-        Alert.alert("Error", e?.message ?? "Failed to save. Did you run the Supabase schema?");
+        Alert.alert("Error", msg || "Failed to save. Did you run the Supabase schema?");
       }
     } finally {
       setSaving(false);
@@ -98,7 +99,7 @@ export default function ProfileScreen() {
       const ext = fileName.split(".").pop() || "jpg";
       const path = `${profile?.id || "user"}_${Date.now()}.${ext}`;
 
-      const { data: uploadData, error: upErr } = await supabase.storage
+      const { error: upErr } = await supabase.storage
         .from("avatars")
         .upload(path, decode(base64), {
           contentType: asset.mimeType || "image/jpeg",
@@ -111,9 +112,10 @@ export default function ProfileScreen() {
       await updateProfile({ avatar_url: data.publicUrl });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e: any) {
-      console.error("Detailed Upload Error:", e);
-      Alert.alert("Upload Error", e.message || "Failed to upload image");
+    } catch (e) {
+      const err = e as Error;
+      console.error("Detailed Upload Error:", err);
+      Alert.alert("Upload Error", err.message || "Failed to upload image");
     } finally {
       setUploading(false);
     }

@@ -21,7 +21,6 @@ export function VoiceRecordButton({ onRecordComplete }: Props) {
   const scale = useRef(new Animated.Value(1)).current;
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (recordingRef.current) {
@@ -112,12 +111,10 @@ export function VoiceRecordButton({ onRecordComplete }: Props) {
 
   async function uploadVoiceMessage(uri: string, durationMs: number) {
     try {
-      // 1. Read file as Base64 (The most stable way on Android)
       const base64 = await FileSystem.readAsStringAsync(uri, {
        encoding: 'base64',
       });
 
-      // 2. Convert Base64 to ArrayBuffer (Supabase storage accepts this)
       const arrayBuffer = decode(base64);
 
       const fileName = `${Date.now()}.m4a`;

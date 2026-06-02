@@ -9,14 +9,16 @@ export function NetworkBanner() {
   useEffect(() => {
     if (Platform.OS === "web") return;
 
-    let NetInfo: any;
+    let NetInfo: {
+      addEventListener: (listener: (state: { isConnected: boolean | null }) => void) => () => void;
+    };
     try {
       NetInfo = require("@react-native-community/netinfo");
     } catch {
       return;
     }
 
-    const unsub = NetInfo.addEventListener((state: any) => {
+    const unsub = NetInfo.addEventListener((state: { isConnected: boolean | null }) => {
       setOffline(!state.isConnected);
     });
     return unsub;
